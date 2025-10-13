@@ -34,4 +34,6 @@
 # ROS
 build/
 devel/
+install/
+log/
 /.catkin_workspace

@@ -7,7 +7,6 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/home/wzq/workspace/GCOPTER/devel:$CMAKE_PREFIX_PATH"
+export LD_LIBRARY_PATH='/opt/ros/noetic/lib:/usr/local/cuda-12.9/lib64'
+export PKG_CONFIG_PATH='/opt/ros/noetic/lib/pkgconfig'
 export PWD='/home/wzq/workspace/GCOPTER/build'
-export ROSLISP_PACKAGE_DIRECTORIES='/home/wzq/workspace/GCOPTER/devel/share/common-lisp'
-export ROS_PACKAGE_PATH="/home/wzq/workspace/GCOPTER/src:$ROS_PACKAGE_PATH"
