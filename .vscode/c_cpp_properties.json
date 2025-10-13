@@ -10,8 +10,7 @@
         "/opt/ros/noetic/include/**",
         "/home/wzq/workspace/GCOPTER/devel/include/**",
         "/home/wzq/workspace/GCOPTER/src/gcopter/include/**",
-        "/home/wzq/workspace/GCOPTER/src/map_gen/include/**"
-
+        "/home/wzq/workspace/GCOPTER/src/map_gen/mockamap/include/**"
       ],
       "name": "ROS",
       "intelliSenseMode": "linux-gcc-x64",
