@@ -25,7 +25,7 @@ struct Config {
   std::string mapTopic;
   std::string targetTopic;
 
-    double dilateRadius;
+  double dilateRadius;
   double voxelWidth;
   std::vector<double> mapBound;
   double timeoutRRT;
