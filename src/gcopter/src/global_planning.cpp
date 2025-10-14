@@ -130,9 +130,13 @@ public:
 
   inline void plan() {
     if (startGoal.size() == 2) {
+
+      // Find init path (informed-RRT*)
       std::vector<Eigen::Vector3d> route;
       sfc_gen::planPath<voxel_map::VoxelMap>(startGoal[0], startGoal[1], voxelMap.getOrigin(),
                                              voxelMap.getCorner(), &voxelMap, 0.01, route);
+
+      // Generate SFC with init path (FIRI)
       std::vector<Eigen::MatrixX4d> hPolys;
       std::vector<Eigen::Vector3d> pc;
       voxelMap.getSurf(pc);
@@ -143,18 +147,18 @@ public:
       if (route.size() > 1) {
         visualizer.visualizePolytope(hPolys);
 
+        // Set start and end
         Eigen::Matrix3d iniState;
         Eigen::Matrix3d finState;
         iniState << route.front(), Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero();
         finState << route.back(), Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero();
 
-        gcopter::GCOPTER_PolytopeSFC gcopter;
-
+        // Init constraint params
         // magnitudeBounds = [v_max, omg_max, theta_max, thrust_min, thrust_max]^T
         // penaltyWeights = [pos_weight, vel_weight, omg_weight, theta_weight, thrust_weight]^T
         // physicalParams = [vehicle_mass, gravitational_acceleration, horitonral_drag_coeff,
         //                   vertical_drag_coeff, parasitic_drag_coeff, speed_smooth_factor]^T
-        // initialize some constraint parameters
+
         Eigen::VectorXd magnitudeBounds(5);
         Eigen::VectorXd penaltyWeights(5);
         Eigen::VectorXd physicalParams(6);
@@ -178,16 +182,17 @@ public:
 
         traj.clear();
 
+        // Setup for gcopter
+        gcopter::GCOPTER_PolytopeSFC gcopter;
         if (!gcopter.setup(config.weightT, iniState, finState, hPolys, INFINITY,
                            config.smoothingEps, quadratureRes, magnitudeBounds, penaltyWeights,
-                           physicalParams)) {
+                           physicalParams))
           return;
-        }
-
-        if (std::isinf(gcopter.optimize(traj, config.relCostTol))) {
+        
+        // Start Optimize
+        if (std::isinf(gcopter.optimize(traj, config.relCostTol)))
           return;
-        }
-
+        
         if (traj.getPieceNum() > 0) {
           trajStamp = ros::Time::now().toSec();
           visualizer.visualize(traj, route);

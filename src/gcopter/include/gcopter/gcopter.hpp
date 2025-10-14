@@ -57,7 +57,7 @@ private:
   PolyhedraH hPolytopes;
   Eigen::Matrix3Xd shortPath;
 
-  Eigen::VectorXi pieceIdx;
+  Eigen::VectorXi pieceIdx; // waypoints number in each segment
   Eigen::VectorXi vPolyIdx;
   Eigen::VectorXi hPolyIdx;
 
@@ -544,6 +544,7 @@ private:
   }
 
   static inline bool processCorridor(const PolyhedraH &hPs, PolyhedraV &vPs) {
+
     const int sizeCorridor = hPs.size() - 1;
 
     vPs.clear();
@@ -590,6 +591,9 @@ private:
   static inline void setInitial(const Eigen::Matrix3Xd &path, const double &speed,
                                 const Eigen::VectorXi &intervalNs, Eigen::Matrix3Xd &innerPoints,
                                 Eigen::VectorXd &timeAlloc) {
+    
+    // Set init waypoints and times with pieceIdx
+    
     const int sizeM = intervalNs.size();
     const int sizeN = intervalNs.sum();
     innerPoints.resize(3, sizeN - 1);
@@ -612,19 +616,26 @@ private:
   }
 
 public:
-  // magnitudeBounds = [v_max, omg_max, theta_max, thrust_min, thrust_max]^T
-  // penaltyWeights = [pos_weight, vel_weight, omg_weight, theta_weight, thrust_weight]^T
-  // physicalParams = [vehicle_mass, gravitational_acceleration, horitonral_drag_coeff,
-  //                   vertical_drag_coeff, parasitic_drag_coeff, speed_smooth_factor]^T
   inline bool setup(const double &timeWeight, const Eigen::Matrix3d &initialPVA,
                     const Eigen::Matrix3d &terminalPVA, const PolyhedraH &safeCorridor,
                     const double &lengthPerPiece, const double &smoothingFactor,
                     const int &integralResolution, const Eigen::VectorXd &magnitudeBounds,
                     const Eigen::VectorXd &penaltyWeights, const Eigen::VectorXd &physicalParams) {
+
+    // Setup for gcopter
+
     rho = timeWeight;
     headPVA = initialPVA;
     tailPVA = terminalPVA;
 
+    smoothEps = smoothingFactor;
+    integralRes = integralResolution;
+    magnitudeBd = magnitudeBounds;
+    penaltyWt = penaltyWeights;
+    physicalPm = physicalParams;
+    allocSpeed = magnitudeBd(0) * 3.0;
+
+    // Convert to hPoly to vPoly
     hPolytopes = safeCorridor;
     for (size_t i = 0; i < hPolytopes.size(); i++) {
       const Eigen::ArrayXd norms = hPolytopes[i].leftCols<3>().rowwise().norm();
@@ -633,15 +644,9 @@ public:
     if (!processCorridor(hPolytopes, vPolytopes)) {
       return false;
     }
-
     polyN = hPolytopes.size();
-    smoothEps = smoothingFactor;
-    integralRes = integralResolution;
-    magnitudeBd = magnitudeBounds;
-    penaltyWt = penaltyWeights;
-    physicalPm = physicalParams;
-    allocSpeed = magnitudeBd(0) * 3.0;
 
+    // Assign waypoints to Polys with shortest path & Get temporal Dim and spatial Dim
     getShortestPath(headPVA.col(0), tailPVA.col(0), vPolytopes, smoothEps, shortPath);
     const Eigen::Matrix3Xd deltas = shortPath.rightCols(polyN) - shortPath.leftCols(polyN);
     pieceIdx = (deltas.colwise().norm() / lengthPerPiece).cast<int>().transpose();
@@ -683,14 +688,19 @@ public:
   }
 
   inline double optimize(Trajectory<5> &traj, const double &relCostTol) {
+    // Spatial-temporal deformation optimization
+
+    // Define varialbe
     Eigen::VectorXd x(temporalDim + spatialDim);
     Eigen::Map<Eigen::VectorXd> tau(x.data(), temporalDim);
     Eigen::Map<Eigen::VectorXd> xi(x.data() + temporalDim, spatialDim);
 
+    // Set init tau and xi
     setInitial(shortPath, allocSpeed, pieceIdx, points, times);
     backwardT(times, tau);
     backwardP(points, vPolyIdx, vPolytopes, xi);
 
+    // Call L-BFGS
     double minCostFunctional;
     lbfgs_params.mem_size = 256;
     lbfgs_params.past = 3;
@@ -701,6 +711,7 @@ public:
     int ret = lbfgs::lbfgs_optimize(x, minCostFunctional, &GCOPTER_PolytopeSFC::costFunctional,
                                     nullptr, nullptr, this, lbfgs_params);
 
+    // Get optimal trajectroy with tau* and xi*
     if (ret >= 0) {
       forwardT(tau, times);
       forwardP(xi, vPolyIdx, vPolytopes, points);

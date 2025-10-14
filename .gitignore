@@ -6,6 +6,7 @@ devel/
 install/
 log/
 /.catkin_workspace
+src/CMakeLists.txt
 
 # Prerequisites
 *.d
