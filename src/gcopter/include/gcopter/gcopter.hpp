@@ -591,9 +591,9 @@ private:
   static inline void setInitial(const Eigen::Matrix3Xd &path, const double &speed,
                                 const Eigen::VectorXi &intervalNs, Eigen::Matrix3Xd &innerPoints,
                                 Eigen::VectorXd &timeAlloc) {
-    
+
     // Set init waypoints and times with pieceIdx
-    
+
     const int sizeM = intervalNs.size();
     const int sizeN = intervalNs.sum();
     innerPoints.resize(3, sizeN - 1);

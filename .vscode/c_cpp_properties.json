@@ -13,12 +13,12 @@
         "${workspaceFolder}/src/map_gen/mockamap/include/**"
       ],
       "name": "ROS",
-      "intelliSenseMode": "linux-gcc-x64",
-      "compilerPath": "/usr/bin/g++",
       "cStandard": "c17",
       "cppStandard": "c++17",
-      "configurationProvider": "ms-vscode.cmake-tools",
-      "compileCommands": "${workspaceFolder}/build/compile_commands.json"
+      "intelliSenseMode": "linux-gcc-x64",
+      "compilerPath": "/usr/bin/g++",
+      "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+      "configurationProvider": "ms-vscode.cmake-tools"
     }
   ],
   "version": 4
