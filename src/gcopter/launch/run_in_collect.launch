@@ -1,0 +1,30 @@
+<launch>
+    <arg name="init_x" default="0.0"/>
+    <arg name="init_y" default="0.0"/>
+    <arg name="init_z" default="1.5"/>
+    <arg name="init_yaw" default="0.0"/>
+    <arg name="occ_file" default=""/>
+    <arg name="inflate_radius" default="0.0"/>
+    <arg name="odom_topic" default="/drone_0_visual_slam/odom"/>
+    <arg name="yaw_mode" default="LOOK_FORWARD"/>
+
+    <!-- main node -->
+    <include file="$(find gcopter)/launch/include/advanced_param_collect.xml">
+        <arg name="occ_file" value="$(arg occ_file)"/>
+        <arg name="inflate_radius" value="$(arg inflate_radius)"/>
+        <arg name="init_x" value="$(arg init_x)"/>
+        <arg name="init_y" value="$(arg init_y)"/>
+        <arg name="init_z" value="$(arg init_z)"/>
+        <arg name="init_yaw" value="$(arg init_yaw)"/>
+        <arg name="yaw_mode" value="$(arg yaw_mode)"/>
+    </include>
+
+    <!-- simulator -->
+    <include file="$(find gcopter)/launch/include/simulator.xml">
+        <arg name="init_x_" value="$(arg init_x)"/>
+        <arg name="init_y_" value="$(arg init_y)"/>
+        <arg name="init_z_" value="$(arg init_z)"/>
+        <arg name="init_yaw_" value="$(arg init_yaw)"/>
+        <arg name="odometry_topic" value="$(arg odom_topic)"/>
+    </include>
+</launch>

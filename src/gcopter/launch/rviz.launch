@@ -1,0 +1,5 @@
+<launch>
+  <node name="rviz" pkg="rviz" type="rviz"
+        args="-d $(find gcopter)/launch/include/default.rviz"
+        required="true" />
+</launch>

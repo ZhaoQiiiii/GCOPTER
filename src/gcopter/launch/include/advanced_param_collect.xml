@@ -1,0 +1,64 @@
+<launch>
+    <arg name="occ_file"/>
+    <arg name="inflate_radius"/>
+    <arg name="init_x"/>
+    <arg name="init_y"/>
+    <arg name="init_z"/>
+    <arg name="init_yaw"/>
+    <arg name="yaw_mode"/>
+
+    <node pkg="gcopter" name="gcopter_node" type="gcopter_node" output="screen">
+        <param name="occ_file" value="$(arg occ_file)"/>
+        <param name="InflateRadius" value="$(arg inflate_radius)"/>
+        <param name="InitX" value="$(arg init_x)"/>
+        <param name="InitY" value="$(arg init_y)"/>
+        <param name="InitZ" value="$(arg init_z)"/>
+        <param name="InitYaw" value="$(arg init_yaw)"/>
+        <param name="YawMode" value="$(arg yaw_mode)" type="string"/>
+
+        <param name="GoalTopic" value="/uav_actions" type="string"/>
+        <param name="OdomTopic" value="/drone_0_visual_slam/odom" type="string"/>
+
+        <!-- 路径搜索 -->
+        <param name="TimeoutRRT" value="0.02" type="double"/>
+
+        <!-- 平坦约束 / 动力学 -->
+        <param name="MaxVelMag" value="1.0" type="double"/>
+        <param name="MaxBdrMag" value="1.0" type="double"/>
+        <param name="MaxTiltAngle" value="1.05" type="double"/>
+        <param name="MinThrust" value="2.0" type="double"/>
+        <param name="MaxThrust" value="12.0" type="double"/>
+
+        <!-- 飞行器物理参数 -->
+        <param name="VehicleMass" value="0.98" type="double"/>
+        <param name="GravAcc" value="9.8" type="double"/>
+        <param name="HorizDrag" value="0.0" type="double"/>
+        <param name="VertDrag" value="0.0" type="double"/>
+        <param name="ParasDrag" value="0.0" type="double"/>
+        <param name="SpeedEps" value="0.0001" type="double"/>
+
+        <!-- MINCO 优化 -->
+        <param name="InitSpeed" value="0.5" type="double"/>
+        <param name="WeightT" value="20.0" type="double"/>
+        <param name="YawAlignWeight" value="10.0" type="double"/>
+        <param name="SmoothingEps" value="0.01" type="double"/>
+        <param name="IntegralIntervs" value="64" type="int"/>
+        <param name="RelCostTol" value="0.00001" type="double"/>
+        <rosparam param="ChiVec">[10000, 10000, 10000, 100000]</rosparam>
+
+        <!-- SO3 控制器增益 -->
+        <param name="Kx0" value="5.0" type="double"/>
+        <param name="Kx1" value="5.0" type="double"/>
+        <param name="Kx2" value="5.0" type="double"/>
+        <param name="Kv0" value="3.0" type="double"/>
+        <param name="Kv1" value="3.0" type="double"/>
+        <param name="Kv2" value="3.0" type="double"/>
+
+        <!-- perception_utils: FOV 可视化 -->
+        <param name="perception_utils/top_angle" value="0.56" type="double"/>
+        <param name="perception_utils/left_angle" value="0.69" type="double"/>
+        <param name="perception_utils/right_angle" value="0.69" type="double"/>
+        <param name="perception_utils/max_dist" value="5.0" type="double"/>
+        <param name="perception_utils/vis_dist" value="0.75" type="double"/>
+    </node>
+</launch>
